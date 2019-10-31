@@ -1,0 +1,74 @@
+kind: Service
+apiVersion: v1
+metadata:
+    name: nginx-volume-service
+    labels:
+      app: nginx-volume
+spec:
+    type: NodePort
+    selector: 
+      app: nginx-volume
+    ports:
+        - nodePort: 30003
+          port: 8080
+          targetPort: 80
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: nginx-volume
+  labels:
+    app: nginx-volume
+    type: local
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/home/cloud_user/html"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: nginx-pv-claim
+  labels:
+    app: nginx-volume
+spec:
+  storageClassName: manual
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 3Gi
+---
+apiVersion: apps/v1 # for versions before 1.9.0 use apps/v1beta2
+kind: Deployment
+metadata:
+  name: nginx-volume
+  labels:
+    app: nginx-volume 
+spec:
+  selector:
+    matchLabels:
+      app: nginx-volume 
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: nginx-volume 
+    spec:
+      containers:
+          - name: nginx-container
+            image: nginx
+            ports:
+            - containerPort: 80
+            volumeMounts:
+            - name: nginx-storage
+              mountPath: "/usr/share/nginx/html"
+      volumes:
+      - name: nginx-storage
+        persistentVolumeClaim:
+          claimName: nginx-pv-claim
