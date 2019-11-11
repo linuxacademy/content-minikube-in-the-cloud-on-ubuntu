@@ -1,0 +1,74 @@
+kind: Service
+apiVersion: v1
+metadata:
+    name: <name of the service>
+    labels:
+      app: <labels to attach to the service>
+spec:
+    type: <Select LoadBalancer or NodePort>
+    selector: 
+      app: <match the lael:app name>
+    ports:
+        - nodePort: <select a node port in the 30000 range>
+          port: <This is the cluster port>
+          targetPort: <this is the port on the pod, where the app is lisening>
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: <name the volume>
+  labels:
+    app: <this should match the container label>
+    type: local
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 5Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: <path in our local file system"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: <name the volume claim>
+  labels:
+    app: <this should match the container label>
+spec:
+  storageClassName: manual
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 3Gi
+---
+apiVersion: apps/v1 # for versions before 1.9.0 use apps/v1beta2
+kind: Deployment
+metadata:
+  name: <name the deployment>
+  labels:
+    app: <this should match the label for the service>
+spec:
+  selector:
+    matchLabels:
+      app: <this needs to match the label for the service>
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: <this should match the label for the service> 
+    spec:
+      containers:
+          - name: <name the container>
+            image: <this is the docer image to use>
+            ports:
+            - containerPort: <this is the port that the application listens on>
+            volumeMounts:
+            - name: <this is the name of the pv-claim>
+              mountPath: <this is where in the container to mount the claim>
+      volumes:
+      - name: <this is the name of the volume>
+        persistentVolumeClaim:
+          claimName: <this is the name of the pv-claim>
