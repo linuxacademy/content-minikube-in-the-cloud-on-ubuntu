@@ -14,22 +14,6 @@ spec:
           targetPort: <this is the port on the pod, where the app is lisening>
 ---
 apiVersion: v1
-kind: PersistentVolume
-metadata:
-  name: <name the volume>
-  labels:
-    app: <this should match the container label>
-    type: local
-spec:
-  storageClassName: manual
-  capacity:
-    storage: 5Gi
-  accessModes:
-    - ReadWriteOnce
-  hostPath:
-    path: <path in our local file system"
----
-apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: <name the volume claim>
@@ -43,7 +27,7 @@ spec:
     requests:
       storage: 3Gi
 ---
-apiVersion: apps/v1 # for versions before 1.9.0 use apps/v1beta2
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: <name the deployment>
