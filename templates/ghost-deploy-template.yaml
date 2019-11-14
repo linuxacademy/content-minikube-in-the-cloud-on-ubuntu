@@ -20,7 +20,6 @@ metadata:
   labels:
     app: <this should match the container label>
 spec:
-  storageClassName: manual
   accessModes:
     - ReadWriteOnce
   resources:
@@ -46,7 +45,7 @@ spec:
     spec:
       containers:
           - name: <name the container>
-            image: <this is the docer image to use>
+            image: <this is the docker image to use>
             ports:
             - containerPort: <this is the port that the application listens on>
             volumeMounts:
